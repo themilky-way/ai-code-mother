@@ -1,74 +1,101 @@
 <template>
-  <div class="global-header">
-    <div class="header-left">
-      <img src="@/assets/logo.png" alt="logo" class="logo" />
-      <span class="site-title">AI Code Mother</span>
-    </div>
-    <a-menu mode="horizontal" :selected-keys="[selectedKey]" class="header-menu">
-      <a-menu-item v-for="item in menuItems" :key="item.key">
-        <router-link :to="item.path">{{ item.label }}</router-link>
-      </a-menu-item>
-    </a-menu>
-    <div class="header-right">
-      <a-button type="primary">登录</a-button>
-    </div>
-  </div>
+  <a-layout-header class="header">
+    <a-row :wrap="false">
+      <!-- 左侧：Logo和标题 -->
+      <a-col flex="200px">
+        <RouterLink to="/">
+          <div class="header-left">
+            <img class="logo" src="@/assets/logo.png" alt="Logo" />
+            <h1 class="site-title">AI代码生成</h1>
+          </div>
+        </RouterLink>
+      </a-col>
+      <!-- 中间：导航菜单 -->
+      <a-col flex="auto">
+        <a-menu
+          v-model:selectedKeys="selectedKeys"
+          mode="horizontal"
+          :items="menuItems"
+          @click="handleMenuClick"
+        />
+      </a-col>
+      <!-- 右侧：用户操作区域 -->
+      <a-col>
+        <div class="user-login-status">
+          <a-button type="primary">登录</a-button>
+        </div>
+      </a-col>
+    </a-row>
+  </a-layout-header>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { h, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import type { MenuProps } from 'ant-design-vue'
 
-const props = defineProps({
-  menuItems: {
-    type: Array,
-    required: true,
-  },
+const router = useRouter()
+// 当前选中菜单
+const selectedKeys = ref<string[]>(['/'])
+// 监听路由变化，更新当前选中菜单
+router.afterEach((to, from, next) => {
+  selectedKeys.value = [to.path]
 })
 
-const route = useRoute()
-const selectedKey = ref('/')
+// 菜单配置项
+const menuItems = ref([
+  {
+    key: '/',
+    label: '首页',
+    title: '首页',
+  },
+  {
+    key: '/about',
+    label: '关于',
+    title: '关于我们',
+  },
+  {
+    key: 'others',
+    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
+    title: '编程导航',
+  },
+])
 
-const updateSelectedKey = () => {
-  const found = props.menuItems.find(item => item.path === route.path)
-  selectedKey.value = found ? found.key : ''
+// 处理菜单点击
+const handleMenuClick: MenuProps['onClick'] = (e) => {
+  const key = e.key as string
+  selectedKeys.value = [key]
+  // 跳转到对应页面
+  if (key.startsWith('/')) {
+    router.push(key)
+  }
 }
-
-watch(() => route.path, updateSelectedKey)
-onMounted(updateSelectedKey)
 </script>
 
 <style scoped>
-.global-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  padding: 0 24px;
+.header {
   background: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
 }
+
 .header-left {
   display: flex;
   align-items: center;
+  gap: 12px;
 }
+
 .logo {
-  width: 40px;
-  height: 40px;
-  margin-right: 12px;
+  height: 48px;
+  width: 48px;
 }
+
 .site-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #1677ff;
+  margin: 0;
+  font-size: 18px;
+  color: #1890ff;
 }
-.header-menu {
-  flex: 1;
-  margin: 0 32px;
-  min-width: 200px;
-}
-.header-right {
-  display: flex;
-  align-items: center;
+
+.ant-menu-horizontal {
+  border-bottom: none !important;
 }
 </style>

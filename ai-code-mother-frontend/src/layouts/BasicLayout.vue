@@ -1,23 +1,30 @@
 <template>
-  <a-layout style="min-height: 100vh;">
-    <a-layout-header style="padding: 0; background: #fff;">
-      <GlobalHeader :menu-items="menuItems" />
-    </a-layout-header>
-    <a-layout-content style="margin: 24px 16px 0;">
+  <a-layout class="basic-layout">
+    <!-- 顶部导航栏 -->
+    <GlobalHeader />
+    <!-- 主要内容区域 -->
+    <a-layout-content class="main-content">
       <router-view />
     </a-layout-content>
-    <a-layout-footer style="text-align: center; padding: 12px 0; background: #f0f2f5;">
-      <GlobalFooter />
-    </a-layout-footer>
+    <!-- 底部版权信息 -->
+    <GlobalFooter />
   </a-layout>
 </template>
 
 <script setup lang="ts">
-import GlobalHeader from '../components/GlobalHeader.vue'
-import GlobalFooter from '../components/GlobalFooter.vue'
-
-const menuItems = [
-  { key: 'home', label: '首页', path: '/' },
-  { key: 'about', label: '关于', path: '/about' },
-]
+import GlobalHeader from '@/components/GlobalHeader.vue'
+import GlobalFooter from '@/components/GlobalFooter.vue'
 </script>
+
+<style scoped>
+.basic-layout {
+  background: none;
+}
+
+.main-content {
+  max-width: 1200px;
+  padding: 24px;
+  background: white;
+  margin: 16px auto 56px;
+}
+</style>

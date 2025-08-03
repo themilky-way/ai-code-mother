@@ -1,19 +1,38 @@
 <template>
-  <div class="global-footer">
-    <a href="https://github.com/themilky-way/ai-code-mother" target="_blank" rel="noopener noreferrer">
-      AndyQian
-    </a>
-  </div>
+  <a-layout-footer class="footer">
+    <div class="footer-content">
+      <p class="copyright">
+        <a
+          href="https://github.com/themilky-way/ai-code-mother"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="author-link"
+        >
+          Andy Qian
+        </a>
+      </p>
+    </div>
+  </a-layout-footer>
 </template>
 
+<script setup lang="ts">
+// 无需额外的响应式数据
+</script>
+
 <style scoped>
-.global-footer {
+.footer {
+  background: #efefef;
   text-align: center;
-  color: #888;
-  font-size: 14px;
+  padding: 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
-.global-footer a {
-  color: #1677ff;
-  text-decoration: none;
+
+.copyright {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
 }
 </style>
