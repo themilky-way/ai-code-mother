@@ -3,7 +3,7 @@ package com.qian.aicodemother.common;
 import lombok.Data;
 
 /**
- * 请求封装类
+ * 分页请求封装类
  */
 @Data
 public class PageRequest {
