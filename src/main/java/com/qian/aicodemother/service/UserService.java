@@ -2,7 +2,7 @@ package com.qian.aicodemother.service;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
-import com.qian.aicodemother.model.dto.UserQueryRequest;
+import com.qian.aicodemother.model.dto.user.UserQueryRequest;
 import com.qian.aicodemother.model.entity.User;
 import com.qian.aicodemother.model.vo.LoginUserVO;
 import com.qian.aicodemother.model.vo.UserVO;

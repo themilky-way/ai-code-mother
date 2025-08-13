@@ -10,7 +10,7 @@ import com.qian.aicodemother.constant.UserConstant;
 import com.qian.aicodemother.exception.BusinessException;
 import com.qian.aicodemother.exception.ErrorCode;
 import com.qian.aicodemother.exception.ThrowUtils;
-import com.qian.aicodemother.model.dto.*;
+import com.qian.aicodemother.model.dto.user.*;
 import com.qian.aicodemother.model.vo.LoginUserVO;
 import com.qian.aicodemother.model.vo.UserVO;
 import jakarta.annotation.Resource;
