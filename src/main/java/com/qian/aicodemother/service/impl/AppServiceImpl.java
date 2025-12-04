@@ -27,6 +27,7 @@ import com.qian.aicodemother.service.ChatHistoryService;
 import com.qian.aicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -60,6 +61,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
 
     @Resource
     VueProjectBuilder vueProjectBuilder;
+    @Resource
+    private ScreenshotServiceImpl screenshotServiceImpl;
 
 
     @Override
@@ -125,7 +128,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
             ThrowUtils.throwIf(!buildSuccess, ErrorCode.SYSTEM_ERROR, "Vue 项目构建失败，请重试");
             // 检查 dist 目录是否存在
             File distDir = new File(sourceDirPath, "dist");
-            ThrowUtils.throwIf(!distDir.exists() , ErrorCode.SYSTEM_ERROR, "Vue 项目构建完成，但未生成 dist 目录");
+            ThrowUtils.throwIf(!distDir.exists(), ErrorCode.SYSTEM_ERROR, "Vue 项目构建完成，但未生成 dist 目录");
             // 构建完成后，需要将构建后的文件复制到部署目录
             sourceDir = distDir;
         }
@@ -143,10 +146,33 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         updateApp.setDeployedTime(LocalDateTime.now());
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "更行应用部署信息失败");
-        //10. 返回部署可访问的 URL 地址
-        return String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        //10. 得到可访问的 URL 地址
+        String appDeployUrl = String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        //11. 异步生成应用截图并更新封面
+        generateAppScreenshotAsync(appId, appDeployUrl);
+        return appDeployUrl;
     }
 
+    /**
+     * 异步生成应用截图并更新封面
+     * @param appId 应用 ID
+     * @param appUrl 应用访问 URL
+     */
+    @Override
+    public void generateAppScreenshotAsync(Long appId, String appUrl) {
+        // 使用虚拟线程并执行
+        Thread.startVirtualThread(() -> {
+            // 调用截图工具生成截图并上传
+            String screenshotUrl = screenshotServiceImpl.generateAndUploadScreenshot(appUrl);
+            // 更新数据库封面
+            App updateApp = new App();
+            updateApp.setId(appId);
+            updateApp.setCover(screenshotUrl);
+            boolean updated = this.updateById(updateApp);
+            ThrowUtils.throwIf(!updated, ErrorCode.OPERATION_ERROR, "更新应用封面失败");
+        });
+
+    }
 
     @Override
     public AppVO getAppVO(App app) {
