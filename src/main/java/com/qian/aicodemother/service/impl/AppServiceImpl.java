@@ -27,7 +27,6 @@ import com.qian.aicodemother.service.ChatHistoryService;
 import com.qian.aicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -61,6 +60,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
 
     @Resource
     VueProjectBuilder vueProjectBuilder;
+
     @Resource
     private ScreenshotServiceImpl screenshotServiceImpl;
 

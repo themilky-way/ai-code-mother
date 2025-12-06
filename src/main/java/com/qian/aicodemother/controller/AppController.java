@@ -18,9 +18,11 @@ import com.qian.aicodemother.model.dto.app.*;
 import com.qian.aicodemother.model.entity.User;
 import com.qian.aicodemother.model.enums.CodeGenTypeEnum;
 import com.qian.aicodemother.model.vo.AppVO;
+import com.qian.aicodemother.service.ProjectDownloadService;
 import com.qian.aicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +31,13 @@ import com.qian.aicodemother.service.AppService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 /**
- *  控制层。
+ * 控制层。
  *
  * @author <a href="https://github.com/themilky-way">程序员AndyQian</a>
  */
@@ -48,6 +51,9 @@ public class AppController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private ProjectDownloadService projectDownloadService;
+
 
     /**
      * 对话并生成代码（SSE 流式返回）
@@ -59,18 +65,18 @@ public class AppController {
      */
     @GetMapping(value = "chat/gen/code", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> chatToGenCode(@RequestParam Long appId,
-                                       @RequestParam String message,
-                                       HttpServletRequest request) {
+                                                       @RequestParam String message,
+                                                       HttpServletRequest request) {
         //1. 参数校验
         ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 ID 错误");
         ThrowUtils.throwIf(StrUtil.isBlank(message), ErrorCode.PARAMS_ERROR, "提示词不能为空");
         //2. 获取当前登录用户
         User loginUser = userService.getLoginUser(request);
         //3. 调用服务生成代码（SSE 流式返回）
-        Flux<String> contentFlux =  appService.chatToGenCode(appId, message, loginUser);
+        Flux<String> contentFlux = appService.chatToGenCode(appId, message, loginUser);
         return contentFlux
                 .map(chunk -> {
-                    Map<String, String> wrapper = Map.of("d",chunk);
+                    Map<String, String> wrapper = Map.of("d", chunk);
                     String jsonData = JSONUtil.toJsonStr(wrapper);
                     return ServerSentEvent.<String>builder()
                             .data(jsonData)
@@ -83,7 +89,7 @@ public class AppController {
                                 .data("")
                                 .build()
                 ));
-}
+    }
 
     /**
      * 应用部署
@@ -102,6 +108,31 @@ public class AppController {
         // 调用服务部署应用
         String deployUrl = appService.deployApp(appId, loginUser);
         return ResultUtils.success(deployUrl);
+    }
+
+    @GetMapping("/download{appId}")
+    public void downloadAppCode(@PathVariable Long appId, HttpServletRequest request, HttpServletResponse response) {
+        // 1.基础校验
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 ID 无效");
+        // 2.查询应用消息
+        App app = appService.getById(appId);
+        ThrowUtils.throwIf(app == null, ErrorCode.NOT_FOUND_ERROR, "应用不存在");
+        // 3.权限校验：只有应用创建着可以下载代码
+        User loginUser = userService.getLoginUser(request);
+        if (!app.getUserId().equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有权限下载代码");
+        }
+        // 4. 构建应用代码目录路径（生成目录，非部署目录）
+        String codeGenType = app.getCodeGenType();
+        String sourceDirName = codeGenType + "_" + appId;
+        String sourceDirPath = AppConstant.CODE_OUTPUT_ROOT_DIR + File.separator + sourceDirName;
+        // 5. 检查代码目录是否存在
+        File sourceDir = new File(sourceDirPath);
+        ThrowUtils.throwIf(!sourceDir.exists() || !sourceDir.isDirectory(), ErrorCode.NOT_FOUND_ERROR, "应用代码不存在，请先生成代码");
+        // 6. 生成的代码下载文件名（不建议添加中文）
+        String downloadFileName = String.valueOf(appId);
+        // 7. 调用服务下载代码
+        projectDownloadService.downloadProjectAsZip(sourceDirPath, downloadFileName, response);
     }
 
     /**
@@ -341,7 +372,6 @@ public class AppController {
         // 获取封装类
         return ResultUtils.success(appService.getAppVO(app));
     }
-
 
 
 }
