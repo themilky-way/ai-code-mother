@@ -14,7 +14,7 @@
           placeholder="选择生成类型"
           style="width: 150px"
         >
-          <a-select-option value="">全部</a-select-option>
+          <a-select-option>全部</a-select-option>
           <a-select-option
             v-for="option in CODE_GEN_TYPE_OPTIONS"
             :key="option.value"
@@ -69,7 +69,7 @@
         </template>
         <template v-else-if="column.key === 'action'">
           <a-space>
-            <a-button type="primary" size="small" @click="editApp(record)"> 编辑 </a-button>
+            <a-button type="primary" size="small" @click="editApp(record)"> 编辑</a-button>
             <a-button
               type="default"
               size="small"
