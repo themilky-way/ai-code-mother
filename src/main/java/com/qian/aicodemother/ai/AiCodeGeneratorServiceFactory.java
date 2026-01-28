@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.qian.aicodemother.ai.tools.*;
 import com.qian.aicodemother.exception.BusinessException;
 import com.qian.aicodemother.exception.ErrorCode;
+import com.qian.aicodemother.guardrail.PromptSafetyInputGuardrail;
 import com.qian.aicodemother.model.enums.CodeGenTypeEnum;
 import com.qian.aicodemother.service.ChatHistoryService;
 import com.qian.aicodemother.utils.SpringContextUtil;
@@ -104,6 +105,7 @@ public class AiCodeGeneratorServiceFactory {
                                 ToolExecutionResultMessage.from(toolExecutionRequest,
                                         "Error : there is no tool called " + toolExecutionRequest.name())
                         )
+                        .inputGuardrails(new PromptSafetyInputGuardrail()) // 添加输入护轨
                         .build();
             }
             //HTMl和多文件生成，使用流式对话模型
@@ -114,6 +116,7 @@ public class AiCodeGeneratorServiceFactory {
                         .chatModel(chatModel)
                         .streamingChatModel(openAiStreamingChatModel)
                         .chatMemory(chatMemory)
+                        .inputGuardrails(new PromptSafetyInputGuardrail()) // 添加输入护轨
                         .build();
             }
             default ->
