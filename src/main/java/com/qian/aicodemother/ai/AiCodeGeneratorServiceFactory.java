@@ -6,6 +6,7 @@ import com.qian.aicodemother.ai.tools.*;
 import com.qian.aicodemother.exception.BusinessException;
 import com.qian.aicodemother.exception.ErrorCode;
 import com.qian.aicodemother.guardrail.PromptSafetyInputGuardrail;
+import com.qian.aicodemother.guardrail.RetryOutputGuardrail;
 import com.qian.aicodemother.model.enums.CodeGenTypeEnum;
 import com.qian.aicodemother.service.ChatHistoryService;
 import com.qian.aicodemother.utils.SpringContextUtil;
@@ -105,7 +106,9 @@ public class AiCodeGeneratorServiceFactory {
                                 ToolExecutionResultMessage.from(toolExecutionRequest,
                                         "Error : there is no tool called " + toolExecutionRequest.name())
                         )
+                        .maxSequentialToolsInvocations(35) // 最多连续调用 35 次工具
                         .inputGuardrails(new PromptSafetyInputGuardrail()) // 添加输入护轨
+//                      .outputGuardrails(new RetryOutputGuardrail()) // 添加输出护轨，为了能流式输出当前不使用
                         .build();
             }
             //HTMl和多文件生成，使用流式对话模型
@@ -117,6 +120,7 @@ public class AiCodeGeneratorServiceFactory {
                         .streamingChatModel(openAiStreamingChatModel)
                         .chatMemory(chatMemory)
                         .inputGuardrails(new PromptSafetyInputGuardrail()) // 添加输入护轨
+//                      .outputGuardrails(new RetryOutputGuardrail()) // 添加输出护轨，为了能流式输出当前不使用
                         .build();
             }
             default ->
