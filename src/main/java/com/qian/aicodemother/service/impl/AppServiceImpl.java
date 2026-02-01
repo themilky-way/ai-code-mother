@@ -30,6 +30,7 @@ import com.qian.aicodemother.service.ChatHistoryService;
 import com.qian.aicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -48,6 +49,8 @@ import java.util.stream.Collectors;
 @Service
 public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppService {
 
+    @Value("${code.deploy-host:http://localhost}")
+    private String deployHost;
 
     @Resource
     private UserService userService;
@@ -175,7 +178,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         boolean updateResult = this.updateById(updateApp);
         ThrowUtils.throwIf(!updateResult, ErrorCode.OPERATION_ERROR, "更行应用部署信息失败");
         //10. 得到可访问的 URL 地址
-        String appDeployUrl = String.format("%s/%s", AppConstant.CODE_DEPLOY_HOST, deployKey);
+        String appDeployUrl = String.format("%s/%s", deployHost, deployKey);
         //11. 异步生成应用截图并更新封面
         generateAppScreenshotAsync(appId, appDeployUrl);
         return appDeployUrl;
