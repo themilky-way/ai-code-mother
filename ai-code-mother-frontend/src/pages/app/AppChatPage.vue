@@ -218,6 +218,7 @@ import {
   getAppVoById,
   deployApp as deployAppApi,
   deleteApp as deleteAppApi,
+  downloadAppCode,
 } from '@/api/appController'
 import { listAppChatHistory } from '@/api/chatHistoryController'
 import { CodeGenTypeEnum, formatCodeGenType } from '@/utils/codeGenTypes'
@@ -616,25 +617,26 @@ const downloadCode = async () => {
   }
   downloading.value = true
   try {
-    const API_BASE_URL = request.defaults.baseURL || ''
-    const url = `${API_BASE_URL}/app/download/${appId.value}`
-    const response = await fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-    })
-    if (!response.ok) {
-      throw new Error(`下载失败: ${response.status}`)
+    const res = await downloadAppCode(
+      { appId: appId.value as unknown as number },
+      { responseType: 'blob' },
+    )
+    if (!res || !res.data) {
+      throw new Error('下载失败：返回数据为空')
     }
+
     // 获取文件名
-    const contentDisposition = response.headers.get('Content-Disposition')
+    const contentDisposition = res.headers['content-disposition']
     const fileName = contentDisposition?.match(/filename="(.+)"/)?.[1] || `app-${appId.value}.zip`
+
     // 下载文件
-    const blob = await response.blob()
+    const blob = new Blob([res.data], { type: 'application/zip' })
     const downloadUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = fileName
     link.click()
+
     // 清理
     URL.revokeObjectURL(downloadUrl)
     message.success('代码下载成功')
