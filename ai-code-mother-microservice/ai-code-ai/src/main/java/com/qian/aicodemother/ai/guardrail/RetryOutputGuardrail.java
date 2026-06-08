@@ -1,4 +1,4 @@
-package com.qian.aicodemother.guardrail;
+package com.qian.aicodemother.ai.guardrail;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.guardrail.OutputGuardrail;
