@@ -1,4 +1,4 @@
-package com.qian.aicodemother.service;
+package com.qian.aicodeuser.service;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;

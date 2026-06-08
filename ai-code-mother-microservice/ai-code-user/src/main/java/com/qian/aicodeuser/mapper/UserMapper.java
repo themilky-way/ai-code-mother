@@ -1,4 +1,4 @@
-package com.qian.aicodemother.mapper;
+package com.qian.aicodeuser.mapper;
 
 import com.mybatisflex.core.BaseMapper;
 import com.qian.aicodemother.model.entity.User;

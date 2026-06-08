@@ -1,4 +1,4 @@
-package com.qian.aicodemother.controller;
+package com.qian.aicodeuser.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.mybatisflex.core.paginate.Page;
@@ -13,6 +13,7 @@ import com.qian.aicodemother.exception.ThrowUtils;
 import com.qian.aicodemother.model.dto.user.*;
 import com.qian.aicodemother.model.vo.LoginUserVO;
 import com.qian.aicodemother.model.vo.UserVO;
+import com.qian.aicodeuser.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.qian.aicodemother.model.entity.User;
-import com.qian.aicodemother.service.UserService;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 

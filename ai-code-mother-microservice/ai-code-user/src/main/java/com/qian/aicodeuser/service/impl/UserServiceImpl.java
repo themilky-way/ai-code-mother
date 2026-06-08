@@ -1,4 +1,4 @@
-package com.qian.aicodemother.service.impl;
+package com.qian.aicodeuser.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -9,11 +9,11 @@ import com.qian.aicodemother.exception.BusinessException;
 import com.qian.aicodemother.exception.ErrorCode;
 import com.qian.aicodemother.model.dto.user.UserQueryRequest;
 import com.qian.aicodemother.model.entity.User;
-import com.qian.aicodemother.mapper.UserMapper;
 import com.qian.aicodemother.model.enums.UserRoleEnum;
 import com.qian.aicodemother.model.vo.LoginUserVO;
 import com.qian.aicodemother.model.vo.UserVO;
-import com.qian.aicodemother.service.UserService;
+import com.qian.aicodeuser.mapper.UserMapper;
+import com.qian.aicodeuser.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -25,12 +25,12 @@ import java.util.stream.Collectors;
 import static com.qian.aicodemother.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
- *  服务层实现。
+ * 服务层实现。
  *
  * @author <a href="https://github.com/themilky-way">程序员AndyQian</a>
  */
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -51,7 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("userAccount", userAccount);
         long count = this.mapper.selectCountByQuery(queryWrapper);
-        if(count > 0) {
+        if (count > 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号已存在");
         }
         //3.加密密码
@@ -71,7 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
 
     @Override
     public LoginUserVO getLoginUserVO(User user) {
-        if (user == null){
+        if (user == null) {
             return null;
         }
         LoginUserVO loginUserVO = new LoginUserVO();
@@ -113,7 +113,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         //先判断用户是否登录
         User user = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
         if (user == null || user.getId() == null) {
-            throw  new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
         //从数据库查询当前用户信息
         long userId = user.getId();
@@ -126,7 +126,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
 
     @Override
     public UserVO getUserVO(User user) {
-        if (user == null){
+        if (user == null) {
             return null;
         }
         UserVO userVO = new UserVO();
@@ -136,7 +136,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
 
     @Override
     public List<UserVO> getUserVOList(List<User> userList) {
-        if (CollectionUtil.isEmpty(userList)){
+        if (CollectionUtil.isEmpty(userList)) {
             return new ArrayList<>();
         }
         return userList.stream()
@@ -147,9 +147,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
     @Override
     public boolean userLogout(HttpServletRequest request) {
         //先判断用户是否登录
-        Object userObj =request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (userObj == null ) {
-            throw  new BusinessException(ErrorCode.OPERATION_ERROR, "用户未登录");
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (userObj == null) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "用户未登录");
         }
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return true;

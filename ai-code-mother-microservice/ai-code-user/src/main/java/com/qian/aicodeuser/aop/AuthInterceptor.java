@@ -1,11 +1,11 @@
-package com.qian.aicodemother.aop;
+package com.qian.aicodeuser.aop;
 
 import com.qian.aicodemother.annotation.AuthCheck;
 import com.qian.aicodemother.exception.BusinessException;
 import com.qian.aicodemother.exception.ErrorCode;
 import com.qian.aicodemother.model.entity.User;
 import com.qian.aicodemother.model.enums.UserRoleEnum;
-import com.qian.aicodemother.service.UserService;
+import com.qian.aicodeuser.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
