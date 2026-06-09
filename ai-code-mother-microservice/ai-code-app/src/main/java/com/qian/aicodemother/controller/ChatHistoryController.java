@@ -8,10 +8,10 @@ import com.qian.aicodemother.common.ResultUtils;
 import com.qian.aicodemother.constant.UserConstant;
 import com.qian.aicodemother.exception.ErrorCode;
 import com.qian.aicodemother.exception.ThrowUtils;
+import com.qian.aicodemother.innerservice.InnerUserService;
 import com.qian.aicodemother.model.dto.chathistory.ChatHistoryQueryRequest;
 import com.qian.aicodemother.model.entity.ChatHistory;
 import com.qian.aicodemother.model.entity.User;
-import com.qian.aicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
@@ -31,9 +31,6 @@ public class ChatHistoryController {
     @Resource
     private ChatHistoryService chatHistoryService;
 
-    @Resource
-    private UserService userService;
-
     /**
      * 分页查询某个应用的对话历史（游标查询）
      *
@@ -48,7 +45,7 @@ public class ChatHistoryController {
                                                               @RequestParam(defaultValue = "10") int pageSize,
                                                               @RequestParam(required = false) LocalDateTime lastCreateTime,
                                                               HttpServletRequest request) {
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = InnerUserService.getLoginUser(request);
         Page<ChatHistory> result = chatHistoryService.listAppChatHistoryByPage(appId, pageSize, lastCreateTime, loginUser);
         return ResultUtils.success(result);
     }

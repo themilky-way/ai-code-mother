@@ -7,8 +7,9 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
-import com.qian.aicodemother.ai.AiCodeGenTypeRoutingService;
 import com.qian.aicodemother.ai.AiCodeGenTypeRoutingServiceFactory;
+import com.qian.aicodemother.service.ChatHistoryService;
+import com.qian.aicodemother.ai.AiCodeGenTypeRoutingService;
 import com.qian.aicodemother.constant.AppConstant;
 import com.qian.aicodemother.core.AiCodeGeneratorFacade;
 import com.qian.aicodemother.core.builder.VueProjectBuilder;
@@ -16,6 +17,8 @@ import com.qian.aicodemother.core.handler.StreamHandlerExecutor;
 import com.qian.aicodemother.exception.BusinessException;
 import com.qian.aicodemother.exception.ErrorCode;
 import com.qian.aicodemother.exception.ThrowUtils;
+import com.qian.aicodemother.innerservice.InnerScreenshotService;
+import com.qian.aicodemother.innerservice.InnerUserService;
 import com.qian.aicodemother.model.dto.app.AppAddRequest;
 import com.qian.aicodemother.model.dto.app.AppQueryRequest;
 import com.qian.aicodemother.model.entity.App;
@@ -25,14 +28,11 @@ import com.qian.aicodemother.model.enums.ChatHistoryMessageTypeEnum;
 import com.qian.aicodemother.model.enums.CodeGenTypeEnum;
 import com.qian.aicodemother.model.vo.AppVO;
 import com.qian.aicodemother.model.vo.UserVO;
-import com.qian.aicodemother.monitor.MonitorContext;
-import com.qian.aicodemother.monitor.MonitorContextHolder;
 import com.qian.aicodemother.service.AppService;
-import com.qian.aicodemother.service.ChatHistoryService;
-import com.qian.aicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -55,7 +55,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     private String deployHost;
 
     @Resource
-    private UserService userService;
+    @Lazy
+    private InnerUserService userService;
 
     @Resource
     private AiCodeGeneratorFacade aiCodeGeneratorFacade;
@@ -70,7 +71,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     VueProjectBuilder vueProjectBuilder;
 
     @Resource
-    private ScreenshotServiceImpl screenshotServiceImpl;
+    @Lazy
+    private InnerScreenshotService screenshotServiceImpl;
 
     @Resource
     private AiCodeGenTypeRoutingServiceFactory aiCodeGenTypeRoutingServiceFactory;
@@ -97,21 +99,10 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         }
         //5.在调用 AI 前，先保存用户消息到数据库
         chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
-        //6. 设置监控上下文（用户 ID 和应用 ID）
-        MonitorContextHolder.setContext(
-                MonitorContext.builder()
-                        .userId(loginUser.getId().toString())
-                        .appId(appId.toString())
-                        .build()
-        );
-        //7. 调用 AI 生成代码（流式）
+        //6. 调用 AI 生成代码（流式）
         Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
-        //8. 收集 AI 响应的内容，并且在完成后保存记录到对话历史
-        return streamHandlerExecutor.doExecute(codeStream, chatHistoryService, appId, loginUser, codeGenTypeEnum)
-                .doFinally(signalType -> {
-                    // 流结束时清理（无论成功/失败/取消）
-                    MonitorContextHolder.clearContext();
-                });
+        //7. 收集 AI 响应的内容，并且在完成后保存记录到对话历史
+        return streamHandlerExecutor.doExecute(codeStream, chatHistoryService, appId, loginUser, codeGenTypeEnum);
     }
 
     @Override
