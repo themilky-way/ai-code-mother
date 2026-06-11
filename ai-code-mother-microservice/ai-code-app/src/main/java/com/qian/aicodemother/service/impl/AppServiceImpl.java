@@ -31,8 +31,8 @@ import com.qian.aicodemother.model.vo.UserVO;
 import com.qian.aicodemother.service.AppService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -54,8 +54,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     @Value("${code.deploy-host:http://localhost}")
     private String deployHost;
 
-    @Resource
-    @Lazy
+    @DubboReference
     private InnerUserService userService;
 
     @Resource
@@ -70,9 +69,8 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     @Resource
     VueProjectBuilder vueProjectBuilder;
 
-    @Resource
-    @Lazy
-    private InnerScreenshotService screenshotServiceImpl;
+    @DubboReference
+    private InnerScreenshotService screenshotService;
 
     @Resource
     private AiCodeGenTypeRoutingServiceFactory aiCodeGenTypeRoutingServiceFactory;
@@ -198,7 +196,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         // 使用虚拟线程并执行
         Thread.startVirtualThread(() -> {
             // 调用截图工具生成截图并上传
-            String screenshotUrl = screenshotServiceImpl.generateAndUploadScreenshot(appUrl);
+            String screenshotUrl = screenshotService.generateAndUploadScreenshot(appUrl);
             // 更新数据库封面
             App updateApp = new App();
             updateApp.setId(appId);
